@@ -1,0 +1,30 @@
+-- ==========================================
+-- 🚀 BGL CLOUD LOADER: SCIENCE HARVESTER V12
+-- ==========================================
+
+-- [1] LISENSI SCRIPT (Wajib Diisi)
+-- Masukkan License Key yang kamu dapatkan dari Bot Discord
+_G.BGL_KEY = "KEY-24630412"
+
+-- [2] PENGATURAN PANEN (Wajib Diisi)
+-- Masukkan nama world tempat Science Station kamu berada (Gunakan huruf kecil semua) Unlimited world gunakan tanda coma untuk menambahkan
+_G.BGL_WORLDS = {
+    "ykequ", 
+    "worldpanen23", 
+    "worldpanen3"
+}
+
+-- [3] PENGATURAN GUDANG PENYIMPANAN (Wajib Diisi)
+-- Kemana bot harus melempar chemical saat tas sudah penuh (200 item)?
+_G.BGL_DROP_WORLD = "bhare"
+_G.BGL_DROP_DOOR = "chemstok"
+
+-- [4] WHITELIST (Opsional - Teman yang diizinkan)
+-- Masukkan nama GrowID kamu/temanmu. Bot tidak akan kabur jika temanmu masuk world.
+_G.BGL_WHITELIST = { 
+    "namateman1", 
+    "namateman2" 
+}
+
+
+runThread(function()local function a(b)return b:gsub('..',function(c)return string.char(tonumber(c,16))end)end;local d="68747470733a2f2f6170692e746f6b6f64756b756e2e636f6d2f617574683f6b65793d"local e=a(d)..(_G.BGL_KEY or""):gsub("%s+","")local function f(g)local h='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'g=string.gsub(g,'[^'..h..'=]','')return g:gsub('.',function(i)if i=='='then return''end;local j,k='',h:find(i)-1;for l=6,1,-1 do j=j..(k%2^l-k%2^(l-1)>0 and'1'or'0')end;return j end):gsub('%d%d%d%d%d%d%d%d',function(i)local m=0;for l=1,8 do m=m+(i:sub(l,l)=='1'and 2^(8-l)or 0)end;return string.char(m)end)end;log("================================")log("📡 BGL Cloud: Verifying License...")local n,o=pcall(fetch,e)if not n or not o or o==""then log("❌ Gagal Terhubung! Server Offline atau Cek Internet.")log("================================")return end;if string.find(o,'"\115\116\097\116\117\115":"\115\117\099\099\101\115\115"')then log("✅ License Valid! Selamat Datang.")local p=o:match('"\099\111\110\116\101\110\116"%s*:%s*"(.-)"')if p then log("📥 Sinkronisasi Core dari VPS...")log("================================")local k,q=(loadstring or load)(f(p))if k then k()else log("❌ Core Error: "..tostring(q))end end else local r=o:match('"\109\115\103"%s*:%s*"(.-)"')or"Invalid Key"log("❌ AUTH GAGAL: "..r)log("================================")return end end)
