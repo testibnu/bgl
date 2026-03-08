@@ -16,8 +16,8 @@ _G.BGL_WORLDS = {
 
 -- [3] PENGATURAN GUDANG PENYIMPANAN (Wajib Diisi)
 -- Kemana bot harus melempar chemical saat tas sudah penuh (200 item)?
-_G.BGL_DROP_WORLD = "bhare"
-_G.BGL_DROP_DOOR = "chemstok"
+_G.BGL_DROP_WORLD = "zxzxzx"
+_G.BGL_DROP_DOOR = "zxzxzx"
 
 -- [4] WHITELIST (Opsional - Teman yang diizinkan)
 -- Masukkan nama GrowID kamu/temanmu. Bot tidak akan kabur jika temanmu masuk world.
