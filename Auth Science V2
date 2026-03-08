@@ -9,7 +9,7 @@ _G.BGL_KEY = "KEY-XXXXXXX"
 -- [2] PENGATURAN PANEN (Wajib Diisi)
 -- Masukkan nama world tempat Science Station kamu berada (Gunakan huruf kecil semua) Unlimited world gunakan tanda coma untuk menambahkan
 _G.BGL_WORLDS = {
-    "ykequ", 
+    "sdsdsdsd", 
     "worldpanen23", 
     "worldpanen3"
 }
