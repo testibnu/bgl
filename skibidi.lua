@@ -1,6 +1,7 @@
 local IS_GL=(growtopia~=nil)or(growlauncher~=nil)or(type(addHook)=="function"and type(RemoveHook)=="nil")
 local IS_GENTA=(type(AddHook)=="function")
 local API_URL="https://vendlocator.sender.my.id/api/public/"
+local textureCache=nil
 local function xLog(msg)
 local txt="`9[VL]`w "..msg
 if IS_GL and log then log(txt)
@@ -58,6 +59,27 @@ end
 if#items>0 then return{success=true,data=items}end
 return nil
 end
+local function loadTextures()
+if textureCache then return textureCache end
+local url=API_URL.."textures"
+local res=xFetch(url)
+if res then
+local ok,data=pcall(JSONDecode,res)
+if ok and data and data.data then textureCache=data.data end
+end
+return textureCache or{}
+end
+local function getItemIcon(name)
+if not name then return""end
+local textures=loadTextures()
+local lower=name:lower()
+for k,v in pairs(textures)do
+if k:find(lower)or lower:find(k)then
+return"|item:"..(v.tex_x or 0)..":"..(v.tex_y or 0)..":"..(v.url or"").."|"
+end
+end
+return""
+end
 local function xDialog(dialogStr,fallbackData)
 if IS_GL and growtopia and growtopia.sendDialog then growtopia.sendDialog(dialogStr)
 elseif IS_GENTA then
@@ -87,6 +109,7 @@ local function searchItem(itemName)
 if not itemName or itemName==""then return end
 itemName=itemName:gsub("%s+"," "):gsub("^%s+",""):gsub("%s+$","")
 xToast("Mencari: "..itemName)
+loadTextures()
 local url=API_URL.."search/"..itemName:gsub(" ","%%20")
 local res=xFetch(url)
 if not res then return xToast("Koneksi gagal!")end
@@ -99,7 +122,8 @@ dialog=dialog.."add_spacer|small|\nadd_textbox|`7━━━━━━━━━━�
 for i,r in ipairs(results)do
 if i>15 then break end
 local world=r.world or"???"local price=formatPrice(r.price or"?")local time=shortTime(r.time or"baru")local name=r.name or"?"
-dialog=dialog.."add_button|warp_"..world.."|`2"..i..". `2"..name.." `7(`6"..price.."`7) `7(`8"..time.."`7) `7-> `2"..world.."`|\n"
+local icon=getItemIcon(name)
+dialog=dialog.."add_button|warp_"..world.."|"..icon.."`2"..i..". `2"..name.." `7(`6"..price.."`7) `7(`8"..time.."`7) `7-> `2"..world.."`|\n"
 end
 dialog=dialog.."add_spacer|small|\nadd_textbox|`7━━━━━━━━━━━━━━━━━━━━|center|\n"
 dialog=dialog.."add_textbox|`7🌐 vendlocator.sender.my.id|center|\nadd_spacer|small|\n"
@@ -108,6 +132,7 @@ xDialog(dialog,results)
 end
 local function showHomeDialog()
 xToast("Loading...")
+loadTextures()
 local items=getRecentItems()
 local dialog="set_default_color|`o\nadd_label_with_icon|big|`2VendLocator``|left|18|\nadd_spacer|small|\n"
 dialog=dialog.."add_textbox|`7🌐 vendlocator.sender.my.id|center|\nadd_spacer|small|\n"
@@ -119,7 +144,8 @@ dialog=dialog.."add_textbox|`2Recent Items:|bold|left|\nadd_spacer|small|\n"
 if#items==0 then dialog=dialog.."add_textbox|`7(tidak ada data)|center|\n"
 else for i,item in ipairs(items)do if i>10 then break end
 local world=item.world or"???"local price=formatPrice(item.price or"?")local time=shortTime(item.time or"baru")local name=item.name or"?"
-dialog=dialog.."add_button|warp_"..world.."|`2"..i..". `2"..name.." `7(`6"..price.."`7) `7(`8"..time.."`7) `7-> `2"..world.."`|\n"
+local icon=getItemIcon(name)
+dialog=dialog.."add_button|warp_"..world.."|"..icon.."`2"..i..". `2"..name.." `7(`6"..price.."`7) `7(`8"..time.."`7) `7-> `2"..world.."`|\n"
 end end
 dialog=dialog.."add_spacer|small|\nadd_textbox|`7━━━━━━━━━━━━━━━━━━━━|center|\n"
 dialog=dialog.."add_textbox|`7🔒 Full version di website!|center|\nadd_spacer|small|\n"
