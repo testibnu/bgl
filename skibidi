@@ -8,7 +8,7 @@ elseif IS_GENTA and doLog then doLog(txt)
 else print(txt)end
 end
 local function xToast(msg)
-if IS_GENTA and doToast then doToast(4,3000,"[DEBUG] "..msg)end
+if IS_GENTA and doToast then doToast(4,2500,msg)end
 xLog(msg)
 end
 local function formatPrice(priceStr)
@@ -33,14 +33,11 @@ elseif lower:find("hari")then return(lower:match("%d+")or"?").."h"
 else return"lama"end
 end
 local function xFetch(url)
-xToast("FETCH: "..url:sub(1,60).."...")
 if IS_GL then
 local ok,res=pcall(fetch,url)
-xToast("GL: ok="..tostring(ok).." type="..type(res))
 if ok and type(res)=="string"then return res end
 elseif IS_GENTA then
 local ok,res=pcall(makeRequest,url,"GET",{},"",5000)
-xToast("GENTA: ok="..tostring(ok).." hasContent="..tostring(res and res.content~=nil))
 if ok and res and res.content then return res.content end
 end
 return nil
@@ -53,27 +50,21 @@ local function xRunThread(func)
 if IS_GL then runThread(func)elseif IS_GENTA then runThread(func,"VL_Thread")end
 end
 local function parseJSON(str)
-if not str then xToast("parseJSON: str is nil")return nil end
-xToast("parseJSON: len="..#str)
-if IS_GL then
-local ok,data=pcall(json.decode,str)
-xToast("GL parse: ok="..tostring(ok))
-return ok and data or nil
-else
-local ok,data=pcall(JSONDecode,str)
-xToast("GENTA parse: ok="..tostring(ok).." type="..type(data))
-return ok and data or nil
+if not str then return nil end
+local items={}
+for name,price,world,time,xtype in str:gmatch('"name":"([^"]-)","price":"([^"]-)","world":"([^"]-)","time":"([^"]-)","type":"([^"]-)"')do
+table.insert(items,{name=name,price=price,world=world,time=time,type=xtype})
 end
+if#items>0 then return{success=true,data=items}end
+return nil
 end
 local function xDialog(dialogStr,fallbackData)
-xToast("DIALOG: "..dialogStr:sub(1,80).."...")
 if IS_GL and growtopia and growtopia.sendDialog then growtopia.sendDialog(dialogStr)
 elseif IS_GENTA then
+xToast("Menampilkan hasil...")
 local lp=getLocal()local net=lp and lp.netId or-1
-xToast("NET: "..tostring(net))
 local formats={{"OnDialogRequest",dialogStr},{[0]="OnDialogRequest",[1]=dialogStr},{v0="OnDialogRequest",v1=dialogStr},{v1="OnDialogRequest",v2=dialogStr}}
 for _,varList in ipairs(formats)do pcall(sendVariant,varList,-1,0)pcall(sendVariant,varList,net,0)end
-xToast("DIALOG SENT")
 if fallbackData and#fallbackData>0 then
 xLog("`2==== HASIL ====``")
 for i=1,math.min(10,#fallbackData)do
@@ -85,32 +76,23 @@ end
 end
 end
 local function getRecentItems()
-xToast("getRecentItems START")
 local url=API_URL.."recent"
 local res=xFetch(url)
-if not res then xToast("getRecentItems: RES NIL")return{}end
-xToast("getRecentItems: res len="..#res)
+if not res then return{}end
 local data=parseJSON(res)
-if not data then xToast("getRecentItems: DATA NIL")return{}end
-xToast("getRecentItems: success="..tostring(data.success).." count="..tostring(data.data and#data.data))
 if data and data.success and data.data then return data.data end
 return{}
 end
 local function searchItem(itemName)
-xToast("searchItem: "..tostring(itemName))
-if not itemName or itemName==""then xToast("searchItem: EMPTY")return end
+if not itemName or itemName==""then return end
 itemName=itemName:gsub("%s+"," "):gsub("^%s+",""):gsub("%s+$","")
-xToast("searchItem cleaned: "..itemName)
+xToast("Mencari: "..itemName)
 local url=API_URL.."search/"..itemName:gsub(" ","%%20")
 local res=xFetch(url)
-if not res then xToast("searchItem: RES NIL")return xToast("Koneksi gagal!")end
-xToast("searchItem: res len="..#res)
+if not res then return xToast("Koneksi gagal!")end
 local data=parseJSON(res)
-if not data then xToast("searchItem: DATA NIL")return xToast("Parse gagal!")end
-xToast("searchItem: success="..tostring(data.success).." count="..tostring(data.data and#data.data))
 if not data or not data.success or not data.data or#data.data==0 then return xToast("Tidak ditemukan: "..itemName)end
 local results=data.data
-xToast("BUILD DIALOG: "..#results.." items")
 local dialog="set_default_color|`o\nadd_label_with_icon|big|`2VendLocator``|left|18|\nadd_spacer|small|\n"
 dialog=dialog.."add_textbox|`7Search: `2"..itemName:upper().." `7(`2"..#results.." results`7)|left|\n"
 dialog=dialog.."add_spacer|small|\nadd_textbox|`7━━━━━━━━━━━━━━━━━━━━|center|\nadd_spacer|small|\n"
@@ -122,13 +104,11 @@ end
 dialog=dialog.."add_spacer|small|\nadd_textbox|`7━━━━━━━━━━━━━━━━━━━━|center|\n"
 dialog=dialog.."add_textbox|`7🌐 vendlocator.sender.my.id|center|\nadd_spacer|small|\n"
 dialog=dialog.."add_button|close_vl|`4Tutup`|\nend_dialog|close_vl|\n"
-xToast("DIALOG LEN: "..#dialog)
 xDialog(dialog,results)
 end
 local function showHomeDialog()
-xToast("showHomeDialog START")
+xToast("Loading...")
 local items=getRecentItems()
-xToast("showHomeDialog: got "..#items.." items")
 local dialog="set_default_color|`o\nadd_label_with_icon|big|`2VendLocator``|left|18|\nadd_spacer|small|\n"
 dialog=dialog.."add_textbox|`7🌐 vendlocator.sender.my.id|center|\nadd_spacer|small|\n"
 dialog=dialog.."add_textbox|`7Commands:|bold|left|\n"
@@ -147,14 +127,12 @@ dialog=dialog.."add_button|close_vl|`4Tutup`|\nend_dialog|close_vl|\n"
 xDialog(dialog,items)
 end
 local function handleTextPacket(pkt)
-xToast("PKT: "..tostring(pkt):sub(1,60))
 if pkt:find("action|input")then
 local text=pkt:match("text|(.+)")
-xToast("TEXT: "..tostring(text))
 if text then
 local item=text:match("^/vf%s+(.+)$")
-if item and item~=""then xToast("CMD: search "..item)xRunThread(function()searchItem(item)end)return true end
-if text=="/vf"then xToast("CMD: home")xRunThread(function()showHomeDialog()end)return true end
+if item and item~=""then xRunThread(function()searchItem(item)end)return true end
+if text=="/vf"then xRunThread(function()showHomeDialog()end)return true end
 end
 end
 if pkt:find("buttonClicked|warp_")then
@@ -166,15 +144,13 @@ if pkt:find("buttonClicked|close_vl")then return true end
 return false
 end
 if IS_GL then
-xLog("MODE: GL")
 if removeHook then removeHook("onSendPacket")end
 addHook(function(type,pkt)if type==2 then return handleTextPacket(pkt)end end,"onSendPacket")
 if applyHook then applyHook()end
 elseif IS_GENTA then
-xLog("MODE: GENTA")
 if RemoveHook then pcall(RemoveHook,"VL_Public")end
-AddHook("OnTextPacket","VL_Public",function(flag,pkt)xToast("HOOK: flag="..tostring(flag))return handleTextPacket(pkt)end)
+AddHook("OnTextPacket","VL_Public",function(flag,pkt)return handleTextPacket(pkt)end)
 end
-xToast("✅ VL Public Ready!")
+xToast("✅ VendLocator Public!")
 xToast("💡 /vf menu | /vf <item> cari")
 xToast("🌐 vendlocator.sender.my.id")
